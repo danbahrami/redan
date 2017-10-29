@@ -1,3 +1,4 @@
-const yay = () => console.log('hello worlds');
+import createAction from './create-action';
+import createErrorAction from './create-error-action';
 
-export default yay;
+export { createAction, createErrorAction };
