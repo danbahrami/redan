@@ -6,7 +6,7 @@
   "scripts": {
     "start": "gulp",
     "test": "jest --watch",
-    "fix": "prettier --single-quote --trailing-comma es5 --write \"src/**/*.js\"",
+    "fix": "prettier --write \"{src,__tests__}/**/*.js\"",
     "precommit": "npm run fix"
   },
   "author": "danbahrami <dan.bahrami@googlemail.com>",
