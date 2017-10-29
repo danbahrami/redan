@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "gulp",
+    "test": "jest --watch",
     "fix": "prettier --single-quote --trailing-comma es5 --write \"src/**/*.js\"",
     "precommit": "npm run fix"
   },
@@ -12,10 +13,12 @@
   "license": "ISC",
   "devDependencies": {
     "babel-core": "^6.26.0",
+    "babel-jest": "^21.2.0",
     "babel-preset-env": "^1.6.1",
     "gulp": "^3.9.1",
     "gulp-babel": "^7.0.0",
     "husky": "^0.14.3",
+    "jest": "^21.2.1",
     "prettier": "1.7.4"
   }
 }

@@ -1,3 +1,3 @@
-const yay = () => console.log('hello world');
+const yay = () => console.log('hello worlds');
 
 export default yay;
