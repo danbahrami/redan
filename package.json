@@ -9,11 +9,24 @@
     "fix": "prettier --write \"{src,__tests__}/**/*.js\"",
     "precommit": "npm run fix"
   },
-  "author": "danbahrami <dan.bahrami@googlemail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/danbahrami/redan.git"
+  },
+  "author": "danbahrami <dan.bahrami@googlemail.com> (http://danbahrami.io/)",
   "license": "ISC",
+  "keywords": [
+    "redan",
+    "redux",
+    "utility",
+    "redux-act",
+    "action",
+    "thunk"
+  ],
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-jest": "^21.2.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
     "gulp": "^3.9.1",
     "gulp-babel": "^7.0.0",

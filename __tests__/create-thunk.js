@@ -23,8 +23,6 @@ describe('createThunk', () => {
     });
   });
 
-  it('accepts a type and a thunk and returns a wrapped thunk', () => {});
-
   it('binds a start action to the thunk', () => {
     const thunk = createThunk('THUNK', () => {});
 
@@ -69,10 +67,10 @@ describe('createThunk', () => {
       expect(store.getActions()[1]).toBe(FAKE_ACTION);
     });
 
-    it('dispatches the end action with the return value of the callback', () => {
+    it('dispatches the end action with the return value of the callback', async () => {
       const thunk = createThunk('THUNK', callback);
 
-      store.dispatch(thunk(PAYLOAD));
+      await store.dispatch(thunk(PAYLOAD));
 
       expect(store.getActions()[2]).toEqual(
         createAction('THUNK_END')(CALLBACK_RETURN)
@@ -86,6 +84,27 @@ describe('createThunk', () => {
 
       store.getActions().forEach(action => {
         expect(action.type).not.toBe('THUNK_ERROR');
+      });
+    });
+
+    describe('when the callback is async', () => {
+      beforeEach(() => {
+        const later = () =>
+          new Promise(resolve => setTimeout(resolve, 1, CALLBACK_RETURN));
+
+        callback.mockImplementation(payload => async dispatch => {
+          return await later();
+        });
+      });
+
+      it('waits to dispatch the end action', async () => {
+        const thunk = createThunk('THUNK', callback);
+
+        await store.dispatch(thunk(PAYLOAD));
+
+        expect(store.getActions()[1]).toEqual(
+          createAction('THUNK_END')(CALLBACK_RETURN)
+        );
       });
     });
 

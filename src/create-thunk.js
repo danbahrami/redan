@@ -6,11 +6,11 @@ const createThunk = (type, callback) => {
   const end = createAction(type + '_END');
   const error = createErrorAction(type + '_ERROR');
 
-  const thunk = payload => dispatch => {
+  const thunk = payload => async dispatch => {
     dispatch(start(payload));
 
     try {
-      const result = dispatch(callback(payload));
+      const result = await dispatch(callback(payload));
       dispatch(end(result));
     } catch (err) {
       dispatch(error(err, payload));
