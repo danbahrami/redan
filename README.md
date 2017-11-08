@@ -22,6 +22,7 @@ Redan exports three utility functions.
 - [createAction](#createaction)
 - [creatErrorAction](#createerroraction)
 - [createThunk](#createthunk)
+- [example](#exampleusage)
 
 You can import them like so:
 
@@ -109,6 +110,10 @@ The action creator accepts a single `payload` argument which can be anything.
 const addTodo = createAction('ADD_TODO');
 
 addTodo('Buy milk'); // => { type: 'ADD_TODO', payload: 'Buy milk' }
+
+/*
+ * The action type is bound to the action creator
+ */
 addTodo.type; // => 'ADD_TODO'
 ```
 
@@ -122,6 +127,10 @@ The action creator accepts `error` and `payload` arguments.
 const todoError = createErrorAction('TODO_ERROR');
 
 todoError(new Error('invalid todo'), 'Dont buy milk'); // => { type: 'ADD_TODO', error: Error, payload: 'Dont buy milk' }
+
+/*
+ * The action type is bound to the action creator
+ */
 todoError.type; // => 'ADD_TODO'
 ```
 
@@ -129,6 +138,124 @@ todoError.type; // => 'ADD_TODO'
 
 Creates a thunk with start, end and error actions attached to it.
 
+When creating a thunk, there are often 3 useful related actions to dispatch within the thunk:
+
+- start - dispatched at the start of the thunk, often used to add loading state to the UI
+- end - at the end of the thunk when everything has gone well. Often used to pass the result of some async call to the reducer.
+- error - when some error was thrown, perhaps your API returns a 404. Used to tell the user that something went wrong
+
+The `createThunk` utility accepts an action type and a callback. It creates these 3 useful actions and dispatches them for you. It also binds the 3 action types to itself so you can reference them in the reducer.
+
 ```
-WIP
+const fetchTodos = createThunk(
+  'FETCH_TODOS', 
+  user_id => async (dispatch, getState) => {
+    const response = await fetch('www.todos.com/todos');
+    return response.json();
+  }
+);
+
+/*
+ * The start, end and error types are bound to the thunk
+ */
+fetchTodos.start.type // => 'FETCH_TODOS_START'
+fetchTodos.end.type // => 'FETCH_TODOS_END'
+fetchTodos.error.type // => 'FETCH_TODOS_ERROR'
+```
+
+The callback is passed `dispatch` and `getState` just like a regular thunk in case you want to do anything more fancy and dispatch extra actions within your callback.
+
+When `fetchTodos` is dispatched with redux-thunk the following happens:
+
+#### The start action
+The start action is dispatched. The payload is whatever payload is passed to the thunk.
+
+```
+dispatch(fetchTodos(123));
+
+// dispatches { type: 'FETCH_TODOS_START', payload: 123 }
+```
+
+#### The end action
+The end action is dispatched once the callback has completed. The callback can be asynchronous if you like. The payload of the end action is whatever is returned from the callback.
+
+```
+const fetchTodos = createThunk('FETCH_TODOS', user_id => () => {
+  return 'hello';
+});
+
+// dispatches { type: 'FETCH_TODOS_END', payload: 'hello' }
+```
+
+The end action is **NOT** dispatched if the callback throws an error.
+
+#### The error action
+
+If the callback throws, the error action gets dispatched instead of the end action. The error action is passed the error and whatever payload was passed to the thunk.
+
+```
+const fetchTodos = createThunk('FETCH_TODOS', user_id => () => {
+  throw new Error('oh no');
+});
+
+dispatch(fetchTodos(123));
+
+// dispatches { type: 'FETCH_TODOS_ERROR', error: Error, payload: 123 }
+```
+
+## Example usage
+
+actions.js
+```
+import { createAction, createThunk } from 'redan';
+
+export const addTodo = createAction('ADD_TODO');
+export const completeTodo = createAction('COMPLETE_TODO');
+
+export const fetchTodos = createThunk('FETCH_TODOS', user_id => () => {
+  const response = fetch('www.todos.com/todos');
+  return response.json();
+});
+```
+
+reducer.js
+```
+import * as actions from './actions';
+
+export default (state, action) => {
+  const { type, payload, error } = action;
+
+  switch (type) {
+    case actions.addTodo.type:
+      return {
+        ...state,
+        todos: [ ...state.todos, payload ]
+      };
+    case actions.completeTodo.type:
+      return {
+        ...state,
+        completed: [ ...state.completed, payload ]
+      };
+    case fetchTodos.start.type:
+      return {
+        ...state,
+        isLoadingTodos: true,
+        error: null
+      };
+    case fetchTodos.end.type:
+      return {
+        ...state,
+        isLoadingTodos: false,
+        todos: payload
+      };
+    case fetchTodos.error.type:
+      return {
+        ...state,
+        isLoadingTodos: false,
+        error: error.message
+      };
+    default:
+      return state;
+  }
+}
 ```
